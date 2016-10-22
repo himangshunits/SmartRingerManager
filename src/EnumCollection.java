@@ -5,7 +5,7 @@ public class EnumCollection {
     // All the high values mean very likely to be LOUD. And vice versa.
     // The class variable of the prediction.
     public enum RINGER_MODE {
-        SILENT(1), VIBRATE(5), LOUD(10);
+        Silent(1), Vibrate(5), Loud(10);
         private final int id;
         RINGER_MODE(int id) { this.id = id; }
         public int getValue() { return id;}

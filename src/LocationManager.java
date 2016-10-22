@@ -10,6 +10,9 @@ public class LocationManager {
     private HashMap<String, EnumCollection.LOCATION_TYPE> locationToTypeMap;
     public LocationManager(){
         //hunt, eb2, carmichael, oval, seminar, lab, meeting, party.
+        locationToNoiseMap = new HashMap<>();
+        locationToTypeMap = new HashMap<>();
+
         locationToNoiseMap.put("hunt", EnumCollection.NOISE_TYPE.QUIET);
         locationToTypeMap.put("hunt", EnumCollection.LOCATION_TYPE.LIBRARY);
 

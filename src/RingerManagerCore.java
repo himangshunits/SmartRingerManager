@@ -28,11 +28,11 @@ import java.util.Map;
  * which is freely distributed.
  */
 public class RingerManagerCore {
-    private LocationManager mLocationManagaer;
+    //private LocationManager mLocationManagaer;
     private DecisionTree mDecisionTree;
 
     public RingerManagerCore(){
-        mLocationManagaer = new LocationManager();
+        //mLocationManagaer = new LocationManager();
         mDecisionTree = new DecisionTree();
         // Make the initial decision tree
         // Train your Decision Tree, will be update later
@@ -100,11 +100,11 @@ public class RingerManagerCore {
         // Find aggregated Rank
         double aggRank = alpha * totalTypeRank + alpha * totalStrengthRank + alpha * totalCurrModeRank + alpha * totalExpectedModeRank;
         if(aggRank < 3.4){
-            return EnumCollection.RINGER_MODE.SILENT;
+            return EnumCollection.RINGER_MODE.Silent;
         } else if (aggRank >= 3.4 && aggRank < 7.8) {
-            return EnumCollection.RINGER_MODE.VIBRATE;
+            return EnumCollection.RINGER_MODE.Vibrate;
         } else if (aggRank >= 7.8 && aggRank <= 11.25){
-            return EnumCollection.RINGER_MODE.LOUD;
+            return EnumCollection.RINGER_MODE.Loud;
         } else {
             System.out.println("getAggregatedNeigborJudgement :: Never Get here! The Agg value = " + aggRank);
             return null;
