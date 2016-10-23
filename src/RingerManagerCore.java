@@ -30,6 +30,7 @@ import java.util.Map;
 public class RingerManagerCore {
     //private LocationManager mLocationManagaer;
     private DecisionTree mDecisionTree;
+    private static LocationManager mLocationManagaer;
 
     public RingerManagerCore(){
         //mLocationManagaer = new LocationManager();
@@ -38,12 +39,17 @@ public class RingerManagerCore {
         // Train your Decision Tree, will be update later
         mDecisionTree.train(new File("data/intial_rules.psv"));
         //System.out.println(tree.getRootNode());
+        mLocationManagaer = new LocationManager();
     }
 
 
     /* This API will help pushing the feedbacks, to update the mDecisionTree object*/
-    public void pushFeedback(Map<String, Object> testVector, EnumCollection.FEEDBACK_TYPE newFeedback){
+    public void pushFeedback(AttibuteVectorInfo vector, EnumCollection.RINGER_MODE lastMode, List<FeedbackInfo> currFeedback){
         // TODO : How do we get to know what was the last prediction based on which it was a feedbck, how do we set the target vales?
+        // Check in the corpus what was the value of the Ringer mode for the curr vector and the last ringer mode predicted,
+        // if combination not there, then add it.
+        // Else replace the original one.
+        // Aggregate the feedbacks from all the users
     }
 
     /* This private API will aggregate the Caller Info and give us a caller's expectation in {MUST_RECEIVE, SHOULD_RECEIVE} */
@@ -53,7 +59,7 @@ public class RingerManagerCore {
         // Get the integer valus of the types and then do an equal linear combination fo them.
         // Maximum of STRENGTH is 10, Max of REL type is 15, both minimums are 1
         // Aggregated min, with fraction 0.5 is 10 * 0.5 + 15 * 0.5 = 12.5
-        //  Aggregated min = 1 * 0.5 + 1 * 0.5 = 1
+        // Aggregated min = 1 * 0.5 + 1 * 0.5 = 1
         // Dividing the range in 2, we have 1 - 6.75, 6.75 - 12.5 with SHOULD_RECEIVE, MUST_RECEIVE
         double alpha = 0.5; // This is the parameter which controls the divide between type and strength
         double combineStr = alpha * strength.getValue() + (1 - alpha) * relType.getValue();
@@ -113,14 +119,28 @@ public class RingerManagerCore {
 
 
 
+    /* This function synthesizes the Attribute Vector */
+    public AttibuteVectorInfo synthesizeAttributeVector(String location, List<NeighborInfo> neighborList, CallerInfo call){
+        EnumCollection.LOCATION_TYPE locationType = mLocationManagaer.getLocationTypeForLocation(location);
+        EnumCollection.NOISE_TYPE noiseLevel = mLocationManagaer.getNoiseLevelForLocation(location);
+        EnumCollection.RINGER_MODE neighborJudgement = getAggregatedNeigborJudgement(neighborList);
+        EnumCollection.CALLER_EXPECATION callerExp = getCallerExpectation(call);
+        EnumCollection.URGENCY_TYPE urg = call.urgency;
+        Integer brightness = 10;//TODO : make it Dynamic
+        return new AttibuteVectorInfo(locationType,noiseLevel,neighborJudgement, callerExp,urg, brightness);
+    }
+
+
 
     /* This is the main public API , the so called SOCIAL BENEFIT FUNCTION which will determine the final ringer mode for a particular set of data of one call.
      * It takes all the parameters, aggregates some of those and finally forms the 5 main variables on which our main decision tree is based on.
       * The 5 attributes it will finally form are LOCATION_TYPE, NOISE LEVEL, NEIGHBOR'S JUDGEMENT, CALLER'S EXPECTATION, URGENCY */
-    public EnumCollection.RINGER_MODE getRecommendedRingerMode(String location, List<NeighborInfo> neighborList, CallerInfo caller, EnumCollection.URGENCY_TYPE urgency){
-        // MAke the vector, and the the return the prediction.
-        return null;
+    public EnumCollection.RINGER_MODE getRecommendedRingerMode(String location, List<NeighborInfo> neighborList, CallerInfo call){
+        /* MAke the vector, and the the return the prediction. */
+        //TODO: Implement the prediction logic.
+        AttibuteVectorInfo vector = synthesizeAttributeVector(location, neighborList, call);
+        // make the test attribue from the vector! use whatever you need as of now. No support for the Brightness in the decision tree corpus.
+        return EnumCollection.RINGER_MODE.Loud;
+
     }
-
-
 }

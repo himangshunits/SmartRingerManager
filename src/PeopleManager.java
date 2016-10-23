@@ -87,11 +87,17 @@ public class PeopleManager {
 
 
     public EnumCollection.RELATIONSHIP_TYPE getRelTypeForName(String name){
-        return nameToRelTypeMap.get(name);
+        if(nameToRelTypeMap.containsKey(name))
+            return nameToRelTypeMap.get(name);
+        else
+            return EnumCollection.RELATIONSHIP_TYPE.FRIEND;
     }
 
 
     public EnumCollection.STRENGTH_TYPE getStrengthForName(String name){
-        return nameToStengthMap.get(name);
+        if(nameToStengthMap.containsKey(name))
+            return nameToStengthMap.get(name);
+        else
+            return EnumCollection.STRENGTH_TYPE.HIGH;
     }
 }

@@ -44,11 +44,17 @@ public class LocationManager {
     }
 
     public EnumCollection.NOISE_TYPE getNoiseLevelForLocation(String locKey){
-        return locationToNoiseMap.get(locKey);
+        if(locationToNoiseMap.containsKey(locKey))
+            return locationToNoiseMap.get(locKey);
+        else
+            return EnumCollection.NOISE_TYPE.NORMAL;//TODO: Decide the default things
     }
 
     public EnumCollection.LOCATION_TYPE getLocationTypeForLocation(String locKey){
-        return locationToTypeMap.get(locKey);
+        if(locationToTypeMap.containsKey(locKey))
+            return locationToTypeMap.get(locKey);
+        else
+            return EnumCollection.LOCATION_TYPE.OUTDOOR;
     }
 
 
