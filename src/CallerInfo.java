@@ -17,4 +17,16 @@ public class CallerInfo {
         this.strength = strength;
         this.urgency = urgency;
     }
+
+    @Override
+    public String toString() {
+        return "CallerInfo{" +
+                "callId=" + callId +
+                ", callerId=" + callerId +
+                ", name='" + name + '\'' +
+                ", type=" + type +
+                ", strength=" + strength +
+                ", urgency=" + urgency +
+                '}';
+    }
 }

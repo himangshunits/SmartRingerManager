@@ -6,48 +6,48 @@ import java.util.HashMap;
  * Going forward it will be dynamic.
  */
 public class LocationManager {
-    private HashMap<String, EnumCollection.NOISE_TYPE> locationToNoiseMap;
+    private HashMap<String, Integer> locationToNoiseMap;
     private HashMap<String, EnumCollection.LOCATION_TYPE> locationToTypeMap;
     public LocationManager(){
         //hunt, eb2, carmichael, oval, seminar, lab, meeting, party.
         locationToNoiseMap = new HashMap<>();
         locationToTypeMap = new HashMap<>();
 
-        locationToNoiseMap.put("hunt", EnumCollection.NOISE_TYPE.QUIET);
+        locationToNoiseMap.put("hunt", 2);
         locationToTypeMap.put("hunt", EnumCollection.LOCATION_TYPE.LIBRARY);
 
-        locationToNoiseMap.put("eb2", EnumCollection.NOISE_TYPE.NORMAL);
+        locationToNoiseMap.put("eb2",4);
         locationToTypeMap.put("eb2", EnumCollection.LOCATION_TYPE.CLASSROOM);
 
-        locationToNoiseMap.put("carmichael", EnumCollection.NOISE_TYPE.NOISY);
+        locationToNoiseMap.put("carmichael", 7);
         locationToTypeMap.put("carmichael", EnumCollection.LOCATION_TYPE.PARTY);
 
-        locationToNoiseMap.put("oval", EnumCollection.NOISE_TYPE.NOISY);
+        locationToNoiseMap.put("oval", 8);
         locationToTypeMap.put("oval", EnumCollection.LOCATION_TYPE.PARTY);
 
-        locationToNoiseMap.put("seminar", EnumCollection.NOISE_TYPE.QUIET);
+        locationToNoiseMap.put("seminar", 5);
         locationToTypeMap.put("seminar", EnumCollection.LOCATION_TYPE.MEETING);
 
-        locationToNoiseMap.put("lab", EnumCollection.NOISE_TYPE.QUIET);
+        locationToNoiseMap.put("lab", 3);
         locationToTypeMap.put("lab", EnumCollection.LOCATION_TYPE.LAB);
 
-        locationToNoiseMap.put("meeting", EnumCollection.NOISE_TYPE.QUIET);
+        locationToNoiseMap.put("meeting", 5);
         locationToTypeMap.put("meeting", EnumCollection.LOCATION_TYPE.MEETING);
 
-        locationToNoiseMap.put("party", EnumCollection.NOISE_TYPE.NOISY);
+        locationToNoiseMap.put("party", 10);
         locationToTypeMap.put("party", EnumCollection.LOCATION_TYPE.PARTY);
     }
 
-    public void addLocation(String name, EnumCollection.NOISE_TYPE noiseType, EnumCollection.LOCATION_TYPE locationType){
+    public void addLocation(String name, Integer noiseType, EnumCollection.LOCATION_TYPE locationType){
         locationToNoiseMap.put(name, noiseType);
         locationToTypeMap.put(name, locationType);
     }
 
-    public EnumCollection.NOISE_TYPE getNoiseLevelForLocation(String locKey){
+    public Integer getNoiseLevelForLocation(String locKey){
         if(locationToNoiseMap.containsKey(locKey))
             return locationToNoiseMap.get(locKey);
         else
-            return EnumCollection.NOISE_TYPE.NORMAL;//TODO: Decide the default things
+            return 1;//TODO: Decide the default things
     }
 
     public EnumCollection.LOCATION_TYPE getLocationTypeForLocation(String locKey){

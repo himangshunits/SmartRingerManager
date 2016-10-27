@@ -1,6 +1,6 @@
 import com.machine.learning.decisiontrees.DecisionTree;
 
-import java.io.File;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 
@@ -31,13 +31,14 @@ public class RingerManagerCore {
     //private LocationManager mLocationManagaer;
     private DecisionTree mDecisionTree;
     private static LocationManager mLocationManagaer;
+    private static String TRAIN_FILE_PATH = "data/intial_rules.psv";
 
     public RingerManagerCore(){
         //mLocationManagaer = new LocationManager();
         mDecisionTree = new DecisionTree();
         // Make the initial decision tree
         // Train your Decision Tree, will be update later
-        mDecisionTree.train(new File("data/intial_rules.psv"));
+        mDecisionTree.train(new File(TRAIN_FILE_PATH));
         //System.out.println(tree.getRootNode());
         mLocationManagaer = new LocationManager();
     }
@@ -50,6 +51,56 @@ public class RingerManagerCore {
         // if combination not there, then add it.
         // Else replace the original one.
         // Aggregate the feedbacks from all the users
+        int positiveFeedbackCount = 0;
+        int neutralFeedBackCount = 0;
+        int negativeFeedbackCount = 0;
+        for(FeedbackInfo item:currFeedback){
+            if(item.feedback.equals(EnumCollection.FEEDBACK_TYPE.POSITIVE)){
+                positiveFeedbackCount++;
+            }
+
+            if(item.feedback.equals(EnumCollection.FEEDBACK_TYPE.NEUTRAL)){
+                neutralFeedBackCount++;
+            }
+
+            if(item.feedback.equals(EnumCollection.FEEDBACK_TYPE.NEGATIVE)){
+                negativeFeedbackCount++;
+            }
+        }
+        if(negativeFeedbackCount > positiveFeedbackCount + neutralFeedBackCount){
+            // RED FLAG!!!!!!
+            System.out.println("RED FLAG!!!! Going to update the Decision Tree.");
+            System.out.println("Positive =  " + positiveFeedbackCount);
+            System.out.println("Neutral = " + neutralFeedBackCount);
+            System.out.println("Negative = " + negativeFeedbackCount);
+
+            String attrVector = vector.locationType.name() + "|" + vector.noiseLevel.toString() + "|" + vector.neighborJudgement.name()
+                    + "|" + vector.callerExpectation.name() + "|" + vector.urgency.name();
+            String lastPrediction = lastMode.name();
+            String newPrediction;
+            if(lastMode.equals(EnumCollection.RINGER_MODE.Loud)){
+                newPrediction = EnumCollection.RINGER_MODE.Vibrate.name();
+            } else if(lastMode.equals(EnumCollection.RINGER_MODE.Vibrate)){
+                newPrediction = EnumCollection.RINGER_MODE.Silent.name();
+            } else {
+                newPrediction = lastMode.name();
+            }
+
+            //remove the original line if present
+            try {
+                removeLineFromFile(attrVector);
+                // Add the new line to the file
+                addToFileAndReTrain(attrVector, newPrediction);
+            } catch (Exception e){
+                System.out.println("Error in ATTR removal = " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Happy Feedback !! ");
+            System.out.println("Positive =  " + positiveFeedbackCount);
+            System.out.println("Neutral = " + neutralFeedBackCount);
+            System.out.println("Negative = " + negativeFeedbackCount);
+        }
     }
 
     /* This private API will aggregate the Caller Info and give us a caller's expectation in {MUST_RECEIVE, SHOULD_RECEIVE} */
@@ -122,7 +173,7 @@ public class RingerManagerCore {
     /* This function synthesizes the Attribute Vector */
     public AttibuteVectorInfo synthesizeAttributeVector(String location, List<NeighborInfo> neighborList, CallerInfo call){
         EnumCollection.LOCATION_TYPE locationType = mLocationManagaer.getLocationTypeForLocation(location);
-        EnumCollection.NOISE_TYPE noiseLevel = mLocationManagaer.getNoiseLevelForLocation(location);
+        Integer noiseLevel = mLocationManagaer.getNoiseLevelForLocation(location);
         EnumCollection.RINGER_MODE neighborJudgement = getAggregatedNeigborJudgement(neighborList);
         EnumCollection.CALLER_EXPECATION callerExp = getCallerExpectation(call);
         EnumCollection.URGENCY_TYPE urg = call.urgency;
@@ -140,7 +191,65 @@ public class RingerManagerCore {
         //TODO: Implement the prediction logic.
         AttibuteVectorInfo vector = synthesizeAttributeVector(location, neighborList, call);
         // make the test attribue from the vector! use whatever you need as of now. No support for the Brightness in the decision tree corpus.
-        return EnumCollection.RINGER_MODE.Loud;
+        //HOSPITAL|N8|Loud|SHOULD_RECEIVE|NONE|
+        String testData = vector.locationType.name() + "|" + vector.noiseLevel.toString() + "|" + vector.neighborJudgement.name()
+                + "|" + vector.callerExpectation.name() + "|" + vector.urgency.name();
+        String newReco = mDecisionTree.classify(testData);
+        if(newReco.equals("Cann't Find Class -- Please Learn Tree with more examples")) {
+            System.out.println("Flag! Not present in the initial training set, adding now and rebuilding the Decision Trees!");
+            addToFileAndReTrain(testData, vector.neighborJudgement.name());
+            newReco = mDecisionTree.classify(testData);
+            System.out.println("Models Updated with new Data, sending new recommendations.");
+            return EnumCollection.RINGER_MODE.valueOf(newReco);
+        }else {
+            return EnumCollection.RINGER_MODE.valueOf(newReco);
+        }
+    }
 
+    private void addToFileAndReTrain(String testData, String classname){
+        String lineToAdd = testData + "|" + classname;
+        System.out.println("Going to add = " + lineToAdd);
+        try{
+            BufferedWriter output = new BufferedWriter(new FileWriter(TRAIN_FILE_PATH, true));
+            output.newLine();
+            output.write(lineToAdd);
+            output.close();
+            mDecisionTree = null;
+            mDecisionTree = new DecisionTree();
+            mDecisionTree.train(new File(TRAIN_FILE_PATH));
+        } catch(Exception e){
+            System.out.println("Error in file write = " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+    private boolean removeLineFromFile(String linePart) throws IOException{
+        System.out.println("Searching for Line Part to remove = " + linePart);
+        File inputFile = new File(TRAIN_FILE_PATH);
+        File tempFile = new File("myTempFile.txt");
+
+        BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+
+        String currentLine;
+        boolean first = true;
+
+        while((currentLine = reader.readLine()) != null) {
+            String trimmedLine = currentLine.trim();
+            if(trimmedLine.contains(linePart)) continue;
+            if (first){
+                first = false;
+            } else {
+                writer.write(System.getProperty("line.separator"));
+            }
+            writer.write(currentLine);
+        }
+        writer.close();
+        reader.close();
+        boolean successful = tempFile.renameTo(inputFile);
+        return successful;
     }
 }

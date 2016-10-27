@@ -17,4 +17,16 @@ public class NeighborInfo {
         this.currRingerMode = currRingerMode;
         this.expectedRingerMode = expectedRingerMode;
     }
+
+    @Override
+    public String toString() {
+        return "NeighborInfo{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", type=" + type +
+                ", strength=" + strength +
+                ", currRingerMode=" + currRingerMode +
+                ", expectedRingerMode=" + expectedRingerMode +
+                '}';
+    }
 }
