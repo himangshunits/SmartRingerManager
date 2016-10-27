@@ -222,7 +222,7 @@ public class Driver {
             while((nextline = br.readLine()) != null){
                output.append(nextline);
             }
-            // TODO: HTML Data JSON Parsing is failing!
+
             Gson gson = new Gson();
             JsonElement element = gson.fromJson (output.toString().trim(), JsonElement.class);
             JsonObject jsonObj = element.getAsJsonObject();
@@ -288,7 +288,11 @@ public class Driver {
         // Predict the mode here! Get feedback
         EnumCollection.RINGER_MODE prediction = mRingerManagerCore.getRecommendedRingerMode(place, tempList, cInfo);
 
+        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        System.out.println("######################################################################");
         System.out.println("The Prediction made from the Social Benefit Function = " + prediction);
+        System.out.println("######################################################################");
+        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
 
 
         /*############################################################*/
@@ -300,7 +304,7 @@ public class Driver {
         System.out.println(feedbacks);
 
 
-        // TODO :: Show the no of Positive feedbacks and the no of negative feedbacks. Do we need to consider the importance of the feedbacks?
+
         /*############################################################*/
         exitPlace(myId);
         /*############################################################*/
@@ -332,12 +336,30 @@ public class Driver {
 
 
 
+    private static void simulateRandomFlow(int iterations){
+        LocationManager locaMgr = new LocationManager();
+        while(iterations >= 0){
+            System.out.println("The Iteration = " + iterations);
+            simulateOneFlow(5031,EnumCollection.RINGER_MODE.getRandomEnum() ,
+                    EnumCollection.RINGER_MODE.getRandomEnum(), locaMgr.getRandomPlacename());
+            iterations--;
+        }
+    }
+
+
     public static void main(String[] args){
         char c;
         do{
             Scanner scan = new Scanner(System.in);
-            System.out.println("Please Enter your's ID :: ");
+            System.out.println("Please Enter your's ID or type in 0 to Randomly Run once ! :: ");
             int id = scan.nextInt();
+            if(id == 0){
+                System.out.println("You have opted for randomization. How many runs do you want to simulate?(Max 1000)");
+                scan.nextLine();
+                int passes = scan.nextInt();
+                simulateRandomFlow(passes);
+                return;
+            }
             System.out.println("You have Entered ID = " + id);
 
             scan.nextLine();

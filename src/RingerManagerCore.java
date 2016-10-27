@@ -31,7 +31,7 @@ public class RingerManagerCore {
     //private LocationManager mLocationManagaer;
     private DecisionTree mDecisionTree;
     private static LocationManager mLocationManagaer;
-    private static String TRAIN_FILE_PATH = "data/intial_rules.psv";
+    private static String TRAIN_FILE_PATH = "data/initial_rules.psv";
 
     public RingerManagerCore(){
         //mLocationManagaer = new LocationManager();
@@ -46,7 +46,6 @@ public class RingerManagerCore {
 
     /* This API will help pushing the feedbacks, to update the mDecisionTree object*/
     public void pushFeedback(AttibuteVectorInfo vector, EnumCollection.RINGER_MODE lastMode, List<FeedbackInfo> currFeedback){
-        // TODO : How do we get to know what was the last prediction based on which it was a feedbck, how do we set the target vales?
         // Check in the corpus what was the value of the Ringer mode for the curr vector and the last ringer mode predicted,
         // if combination not there, then add it.
         // Else replace the original one.
@@ -100,6 +99,16 @@ public class RingerManagerCore {
             System.out.println("Positive =  " + positiveFeedbackCount);
             System.out.println("Neutral = " + neutralFeedBackCount);
             System.out.println("Negative = " + negativeFeedbackCount);
+        }
+        String[] feedbackLine = new String[3];
+        feedbackLine[0] = String.valueOf(positiveFeedbackCount);
+        feedbackLine[1] = String.valueOf(neutralFeedBackCount);
+        feedbackLine[2] = String.valueOf(negativeFeedbackCount);
+        try{
+            //writeFeedbacksToFile(String.join(",", feedbackLine));
+        } catch(Exception e) {
+            System.out.println("Error in writing the Feedback = " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -188,7 +197,6 @@ public class RingerManagerCore {
       * The 5 attributes it will finally form are LOCATION_TYPE, NOISE LEVEL, NEIGHBOR'S JUDGEMENT, CALLER'S EXPECTATION, URGENCY */
     public EnumCollection.RINGER_MODE getRecommendedRingerMode(String location, List<NeighborInfo> neighborList, CallerInfo call){
         /* MAke the vector, and the the return the prediction. */
-        //TODO: Implement the prediction logic.
         AttibuteVectorInfo vector = synthesizeAttributeVector(location, neighborList, call);
         // make the test attribue from the vector! use whatever you need as of now. No support for the Brightness in the decision tree corpus.
         //HOSPITAL|N8|Loud|SHOULD_RECEIVE|NONE|
@@ -197,8 +205,18 @@ public class RingerManagerCore {
         String newReco = mDecisionTree.classify(testData);
         if(newReco.equals("Cann't Find Class -- Please Learn Tree with more examples")) {
             System.out.println("Flag! Not present in the initial training set, adding now and rebuilding the Decision Trees!");
+
+            // Still check once and remove if present, to be safe!
+            try{
+                removeLineFromFile(testData);
+            } catch(Exception e){
+                System.out.println("Error is file writing = " + e.getMessage());
+                e.printStackTrace();
+            }
+
             addToFileAndReTrain(testData, vector.neighborJudgement.name());
-            newReco = mDecisionTree.classify(testData);
+            // Now send the Curr neighbor Judgement as Fail Proof
+            newReco = vector.neighborJudgement.name();
             System.out.println("Models Updated with new Data, sending new recommendations.");
             return EnumCollection.RINGER_MODE.valueOf(newReco);
         }else {
@@ -251,5 +269,14 @@ public class RingerManagerCore {
         reader.close();
         boolean successful = tempFile.renameTo(inputFile);
         return successful;
+    }
+
+    private void writeFeedbacksToFile(String posNeuNeg) throws IOException{
+        File tempFile = new File("feedbackHistory.txt");
+        BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile, true));
+        String trimmedLine = posNeuNeg.trim();
+        writer.write(trimmedLine);
+        writer.write(System.getProperty("line.separator"));
+        writer.close();
     }
 }

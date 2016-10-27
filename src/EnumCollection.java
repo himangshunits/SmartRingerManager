@@ -9,6 +9,9 @@ public class EnumCollection {
         private final int id;
         RINGER_MODE(int id) { this.id = id; }
         public int getValue() { return id;}
+        public static RINGER_MODE getRandomEnum() {
+            return RINGER_MODE.values()[(int) (Math.random() * RINGER_MODE.values().length)];
+        }
     };
 
     public enum RELATIONSHIP_TYPE {

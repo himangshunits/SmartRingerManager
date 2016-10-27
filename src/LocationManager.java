@@ -50,6 +50,19 @@ public class LocationManager {
             return 1;//TODO: Decide the default things
     }
 
+
+    public String getRandomPlacename(){
+        String[] locs = new String[locationToNoiseMap.size()];
+        int i = 0;
+        for(String item:locationToNoiseMap.keySet()){
+            locs[i] = item;
+            i++;
+        }
+        return locs[(int) (Math.random() * locs.length)];
+    }
+
+
+
     public EnumCollection.LOCATION_TYPE getLocationTypeForLocation(String locKey){
         if(locationToTypeMap.containsKey(locKey))
             return locationToTypeMap.get(locKey);
