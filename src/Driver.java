@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
+
 /**
  * Created by Himangshu on 10/22/16.
  */
@@ -337,6 +338,10 @@ public class Driver {
 
 
     private static void simulateRandomFlow(int iterations){
+        if (iterations > 100){
+            System.out.println("please enter value less than 100, exiting.");
+            System.exit(0);
+        }
         LocationManager locaMgr = new LocationManager();
         while(iterations >= 0){
             System.out.println("The Iteration = " + iterations);
